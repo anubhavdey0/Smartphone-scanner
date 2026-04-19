@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Smartphone Detector</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #00ff88;
+    font-family: 'Courier New', monospace;
+    min-height: 100vh;
+    padding: 20px;
+  }
+  .header {
+    text-align: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #00ff8844;
+    margin-bottom: 30px;
+  }
+  .header h1 {
+    font-size: 2em;
+    letter-spacing: 4px;
+    text-shadow: 0 0 20px #00ff88;
+  }
+  .header p {
+    color: #00ff8888;
+    margin-top: 8px;
+    font-size: 0.9em;
+    letter-spacing: 2px;
+  }
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 30px;
+  }
+  .stat-box {
+    background: #0f1a14;
+    border: 1px solid #00ff8844;
+    border-radius: 8px;
+    padding: 20px 40px;
+    text-align: center;
+  }
+  .stat-box .number {
+    font-size: 3em;
+    font-weight: bold;
+    text-shadow: 0 0 20px #00ff88;
+  }
+  .stat-box .label {
+    color: #00ff8888;
+    font-size: 0.8em;
+    letter-spacing: 2px;
+    margin-top: 5px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .device-card {
+    background: #0f1a14;
+    border: 1px solid #00ff8833;
+    border-radius: 8px;
+    padding: 15px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .device-card:hover {
+    border-color: #00ff88;
+    box-shadow: 0 0 20px #00ff8822;
+  }
+  .device-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: #00ff88;
+  }
+  .device-name {
+    font-size: 1em;
+    font-weight: bold;
+    margin-bottom: 10px;
+    color: #00ff88;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .device-info {
+    font-size: 0.78em;
+    color: #00ff8899;
+    margin: 4px 0;
+  }
+  .device-info span {
+    color: #00ff88;
+  }
+  .signal-bar {
+    margin-top: 10px;
+    height: 4px;
+    background: #0a0a0f;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .signal-fill {
+    height: 100%;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #ff4444, #ffaa00, #00ff88);
+    transition: width 0.5s;
+  }
+  .distance-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #00ff8822;
+    border: 1px solid #00ff8844;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 0.75em;
+    color: #00ff88;
+  }
+  .timestamp {
+    text-align: center;
+    color: #00ff8855;
+    font-size: 0.8em;
+    margin-top: 30px;
+    letter-spacing: 2px;
+  }
+  .pulse {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background: #00ff88;
+    border-radius: 50%;
+    margin-right: 8px;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.8); }
+  }
+  .no-data {
+    text-align: center;
+    color: #00ff8855;
+    padding: 60px;
+    font-size: 1.2em;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>📡 SMARTPHONE DETECTOR</h1>
+  <p><span class="pulse"></span>LIVE SCANNING — REFRESHES EVERY 5 SECONDS</p>
+</div>
+
+<div class="stats">
+  <div class="stat-box">
+    <div class="number" id="count">--</div>
+    <div class="label">DEVICES DETECTED</div>
+  </div>
+  <div class="stat-box">
+    <div class="number" id="closest">--</div>
+    <div class="label">CLOSEST (meters)</div>
+  </div>
+</div>
+
+<div class="grid" id="deviceGrid">
+  <div class="no-data">Waiting for scanner data...<br><br>Make sure scanner.py is running!</div>
+</div>
+
+<div class="timestamp" id="timestamp">Last updated: --</div>
+
+<script>
+function getSignalPercent(rssi) {
+  const min = -100, max = -30;
+  return Math.max(0, Math.min(100, ((rssi - min) / (max - min)) * 100));
+}
+
+async function loadData() {
+  try {
+    const res = await fetch('scan_data.json?t=' + Date.now());
+    const data = await res.json();
+
+    document.getElementById('count').textContent = data.count;
+    document.getElementById('closest').textContent = data.devices.length > 0 ? data.devices[0].distance : '--';
+    document.getElementById('timestamp').textContent = 'Last updated: ' + data.timestamp;
+
+    const grid = document.getElementById('deviceGrid');
+    grid.innerHTML = '';
+
+    data.devices.forEach((d, i) => {
+      const pct = getSignalPercent(d.rssi);
+      const card = document.createElement('div');
+      card.className = 'device-card';
+      card.innerHTML = `
+        <div class="distance-badge">~${d.distance}m</div>
+        <div class="device-name">📱 ${d.name}</div>
+        <div class="device-info">MAC: <span>${d.mac}</span></div>
+        <div class="device-info">Signal: <span>${d.rssi} dBm — ${d.signal_quality}</span></div>
+        <div class="device-info">Frequency: <span>${(d.freq / 1000000).toFixed(1)} GHz</span></div>
+        <div class="signal-bar">
+          <div class="signal-fill" style="width:${pct}%"></div>
+        </div>
+      `;
+      grid.appendChild(card);
+    });
+
+  } catch (e) {
+    console.log('Waiting for data...', e);
+  }
+}
+
+loadData();
+setInterval(loadData, 5000);
+</script>
+</body>
+</html>
