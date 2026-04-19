@@ -2,219 +2,773 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Smartphone Detector</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Device Scanner</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: #0a0a0f;
-    color: #00ff88;
-    font-family: 'Courier New', monospace;
-    min-height: 100vh;
-    padding: 20px;
-  }
-  .header {
-    text-align: center;
-    padding: 20px 0;
-    border-bottom: 1px solid #00ff8844;
-    margin-bottom: 30px;
-  }
-  .header h1 {
-    font-size: 2em;
-    letter-spacing: 4px;
-    text-shadow: 0 0 20px #00ff88;
-  }
-  .header p {
-    color: #00ff8888;
-    margin-top: 8px;
-    font-size: 0.9em;
-    letter-spacing: 2px;
-  }
-  .stats {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-bottom: 30px;
-  }
-  .stat-box {
-    background: #0f1a14;
-    border: 1px solid #00ff8844;
-    border-radius: 8px;
-    padding: 20px 40px;
-    text-align: center;
-  }
-  .stat-box .number {
-    font-size: 3em;
-    font-weight: bold;
-    text-shadow: 0 0 20px #00ff88;
-  }
-  .stat-box .label {
-    color: #00ff8888;
-    font-size: 0.8em;
-    letter-spacing: 2px;
-    margin-top: 5px;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 15px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  .device-card {
-    background: #0f1a14;
-    border: 1px solid #00ff8833;
-    border-radius: 8px;
-    padding: 15px;
-    transition: all 0.3s;
-    position: relative;
-    overflow: hidden;
-  }
-  .device-card:hover {
-    border-color: #00ff88;
-    box-shadow: 0 0 20px #00ff8822;
-  }
-  .device-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0;
-    width: 3px;
-    height: 100%;
-    background: #00ff88;
-  }
-  .device-name {
-    font-size: 1em;
-    font-weight: bold;
-    margin-bottom: 10px;
-    color: #00ff88;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .device-info {
-    font-size: 0.78em;
-    color: #00ff8899;
-    margin: 4px 0;
-  }
-  .device-info span {
-    color: #00ff88;
-  }
-  .signal-bar {
-    margin-top: 10px;
-    height: 4px;
-    background: #0a0a0f;
-    border-radius: 2px;
-    overflow: hidden;
-  }
-  .signal-fill {
-    height: 100%;
-    border-radius: 2px;
-    background: linear-gradient(90deg, #ff4444, #ffaa00, #00ff88);
-    transition: width 0.5s;
-  }
-  .distance-badge {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    background: #00ff8822;
-    border: 1px solid #00ff8844;
-    border-radius: 4px;
-    padding: 3px 8px;
-    font-size: 0.75em;
-    color: #00ff88;
-  }
-  .timestamp {
-    text-align: center;
-    color: #00ff8855;
-    font-size: 0.8em;
-    margin-top: 30px;
-    letter-spacing: 2px;
-  }
-  .pulse {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
-    background: #00ff88;
-    border-radius: 50%;
-    margin-right: 8px;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.3; transform: scale(0.8); }
-  }
-  .no-data {
-    text-align: center;
-    color: #00ff8855;
-    padding: 60px;
-    font-size: 1.2em;
-  }
+:root {
+  --bg:        #060810;
+  --surface:   #0d1117;
+  --surface2:  #111827;
+  --border:    rgba(0,220,255,0.12);
+  --border-hi: rgba(0,220,255,0.5);
+  --cyan:      #00dcff;
+  --cyan-dim:  rgba(0,220,255,0.6);
+  --cyan-glow: rgba(0,220,255,0.15);
+  --green:     #00ff9d;
+  --orange:    #ff9500;
+  --red:       #ff3b5c;
+  --purple:    #bf5fff;
+  --yellow:    #ffe135;
+  --text:      #c8d8e8;
+  --text-dim:  rgba(200,216,232,0.45);
+  --mono:      'Share Tech Mono', monospace;
+  --display:   'Orbitron', sans-serif;
+  --radius:    10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Animated grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,220,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,220,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Glow orbs */
+body::after {
+  content: '';
+  position: fixed;
+  top: -200px; left: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(0,220,255,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: orb 12s ease-in-out infinite alternate;
+}
+
+@keyframes orb {
+  from { transform: translate(0,0); }
+  to   { transform: translate(300px, 200px); }
+}
+
+.wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 16px; }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0 16px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-icon {
+  width: 42px; height: 42px;
+  border: 2px solid var(--cyan);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  box-shadow: 0 0 20px var(--cyan-glow), inset 0 0 10px var(--cyan-glow);
+  animation: icon-pulse 3s ease-in-out infinite;
+}
+
+@keyframes icon-pulse {
+  0%,100% { box-shadow: 0 0 20px var(--cyan-glow), inset 0 0 10px var(--cyan-glow); }
+  50% { box-shadow: 0 0 35px rgba(0,220,255,0.3), inset 0 0 20px rgba(0,220,255,0.2); }
+}
+
+.logo-text h1 {
+  font-family: var(--display);
+  font-size: clamp(14px, 3vw, 20px);
+  font-weight: 900;
+  color: var(--cyan);
+  letter-spacing: 3px;
+  text-shadow: 0 0 20px var(--cyan);
+}
+
+.logo-text p {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-top: 2px;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 1px;
+}
+
+.live-dot {
+  width: 8px; height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green);
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.2; }
+}
+
+#status-time { color: var(--cyan); }
+#scan-num { color: var(--green); }
+
+/* ── Stats Row ── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.2s;
+}
+
+.stat-card:hover {
+  border-color: var(--border-hi);
+  transform: translateY(-2px);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent, var(--cyan));
+  opacity: 0.7;
+}
+
+.stat-card.green  { --accent: var(--green); }
+.stat-card.orange { --accent: var(--orange); }
+.stat-card.purple { --accent: var(--purple); }
+.stat-card.red    { --accent: var(--red); }
+.stat-card.yellow { --accent: var(--yellow); }
+
+.stat-num {
+  font-family: var(--display);
+  font-size: clamp(22px, 5vw, 32px);
+  font-weight: 700;
+  color: var(--accent, var(--cyan));
+  text-shadow: 0 0 15px var(--accent, var(--cyan));
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 1.5px;
+  margin-top: 6px;
+  text-transform: uppercase;
+}
+
+.stat-icon { font-size: 18px; margin-bottom: 6px; }
+
+/* ── Filter Bar ── */
+.filter-bar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.filter-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+
+.filter-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.filter-btn:hover {
+  border-color: var(--cyan-dim);
+  color: var(--cyan);
+}
+
+.filter-btn.active {
+  background: var(--cyan-glow);
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 10px var(--cyan-glow);
+}
+
+.filter-btn.bt.active {
+  background: rgba(191,95,255,0.15);
+  border-color: var(--purple);
+  color: var(--purple);
+  box-shadow: 0 0 10px rgba(191,95,255,0.2);
+}
+
+.filter-btn.wifi.active {
+  background: rgba(0,255,157,0.1);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.filter-btn.nearby.active {
+  background: rgba(255,149,0,0.1);
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.filter-btn.mobile.active {
+  background: rgba(255,59,92,0.1);
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.sort-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  padding: 5px 10px;
+  cursor: pointer;
+  outline: none;
+}
+
+/* ── Device Grid ── */
+.section-title {
+  font-family: var(--display);
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.device-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+/* ── Device Card ── */
+.device-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s;
+  cursor: default;
+  animation: card-in 0.4s ease both;
+}
+
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.device-card:hover {
+  border-color: var(--card-accent, var(--cyan-dim));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px var(--card-accent, var(--cyan-dim));
+}
+
+.device-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: var(--card-accent, var(--cyan));
+}
+
+.device-card::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 60px; height: 60px;
+  background: radial-gradient(circle at top right, var(--card-glow, rgba(0,220,255,0.08)), transparent 70%);
+  pointer-events: none;
+}
+
+/* Card themes by source */
+.card-wifi   { --card-accent: var(--green);  --card-glow: rgba(0,255,157,0.08); }
+.card-bt     { --card-accent: var(--purple); --card-glow: rgba(191,95,255,0.08); }
+
+/* Card themes by type */
+.card-mobile   { --card-accent: var(--cyan);   --card-glow: rgba(0,220,255,0.08); }
+.card-router   { --card-accent: var(--orange); --card-glow: rgba(255,149,0,0.08); }
+.card-laptop   { --card-accent: #4ea8de;       --card-glow: rgba(78,168,222,0.08); }
+.card-audio    { --card-accent: var(--yellow); --card-glow: rgba(255,225,53,0.08); }
+.card-wearable { --card-accent: var(--red);    --card-glow: rgba(255,59,92,0.08); }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 8px;
+}
+
+.device-icon-wrap {
+  width: 36px; height: 36px; min-width: 36px;
+  background: var(--card-glow, rgba(0,220,255,0.08));
+  border: 1px solid var(--card-accent, var(--cyan-dim));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
+
+.card-name-wrap { flex: 1; min-width: 0; }
+
+.device-name {
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 1px;
+}
+
+.device-type-badge {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--card-accent, var(--cyan));
+  margin-top: 3px;
+  opacity: 0.8;
+}
+
+.distance-badge {
+  background: var(--card-glow, var(--cyan-glow));
+  border: 1px solid var(--card-accent, var(--border-hi));
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--card-accent, var(--cyan));
+  white-space: nowrap;
+  text-shadow: 0 0 10px var(--card-accent, var(--cyan));
+}
+
+.card-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 10px;
+  margin: 10px 0;
+}
+
+.info-row {
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.5px;
+}
+
+.info-row span {
+  color: var(--text);
+  font-size: 10px;
+}
+
+/* Signal bar */
+.signal-track {
+  height: 3px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 2px;
+  margin-top: 10px;
+  overflow: hidden;
+}
+
+.signal-fill {
+  height: 100%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--red), var(--orange), var(--green));
+  transition: width 0.8s ease;
+}
+
+/* Source badge top right */
+.source-chip {
+  position: absolute;
+  top: 10px; right: 10px;
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--card-glow, var(--cyan-glow));
+  color: var(--card-accent, var(--cyan));
+  border: 1px solid var(--card-accent, var(--cyan-dim));
+}
+
+/* ── Empty state ── */
+.empty-state {
+  grid-column: 1/-1;
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-dim);
+}
+
+.empty-state .big { font-size: 40px; margin-bottom: 16px; }
+.empty-state p { font-size: 12px; letter-spacing: 2px; line-height: 2; }
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  padding: 20px 0 10px;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  border-top: 1px solid var(--border);
+  margin-top: 24px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .header { flex-direction: column; align-items: flex-start; }
+  .stats-row { grid-template-columns: repeat(3, 1fr); }
+  .device-grid { grid-template-columns: 1fr; }
+  .filter-bar { padding: 10px; }
+  .card-info { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 400px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>
+<div class="wrapper">
 
-<div class="header">
-  <h1>📡 SMARTPHONE DETECTOR</h1>
-  <p><span class="pulse"></span>LIVE SCANNING — REFRESHES EVERY 5 SECONDS</p>
-</div>
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">📡</div>
+      <div class="logo-text">
+        <h1>DEVICE SCANNER</h1>
+        <p>WIFI + BLUETOOTH · LIVE DETECTION</p>
+      </div>
+    </div>
+    <div class="status-bar">
+      <div class="live-dot"></div>
+      <span>SCAN <span id="scan-num">#0</span></span>
+      <span>·</span>
+      <span id="status-time">--:--:--</span>
+    </div>
+  </header>
 
-<div class="stats">
-  <div class="stat-box">
-    <div class="number" id="count">--</div>
-    <div class="label">DEVICES DETECTED</div>
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">📶</div>
+      <div class="stat-num" id="s-total">--</div>
+      <div class="stat-label">Total Devices</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon">🛜</div>
+      <div class="stat-num" id="s-wifi">--</div>
+      <div class="stat-label">WiFi</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-icon">🔵</div>
+      <div class="stat-num" id="s-bt">--</div>
+      <div class="stat-label">Bluetooth</div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-icon">📱</div>
+      <div class="stat-num" id="s-mobile">--</div>
+      <div class="stat-label">Mobiles</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon">🌐</div>
+      <div class="stat-num" id="s-router">--</div>
+      <div class="stat-label">Routers</div>
+    </div>
+    <div class="stat-card yellow">
+      <div class="stat-icon">📍</div>
+      <div class="stat-num" id="s-nearby">--</div>
+      <div class="stat-label">Nearby (&lt;5m)</div>
+    </div>
   </div>
-  <div class="stat-box">
-    <div class="number" id="closest">--</div>
-    <div class="label">CLOSEST (meters)</div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <span class="filter-label">Filter:</span>
+    <div class="filter-group" id="filter-group">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn wifi" data-filter="wifi">🛜 WiFi</button>
+      <button class="filter-btn bt" data-filter="bluetooth">🔵 Bluetooth</button>
+      <button class="filter-btn nearby" data-filter="nearby">📍 Nearby &lt;5m</button>
+      <button class="filter-btn mobile" data-filter="mobile">📱 Mobile</button>
+      <button class="filter-btn" data-filter="router">🌐 Router</button>
+      <button class="filter-btn" data-filter="2.4ghz">2.4 GHz</button>
+      <button class="filter-btn" data-filter="5ghz">5 GHz</button>
+    </div>
+    <select class="sort-select" id="sort-select">
+      <option value="distance">Sort: Distance</option>
+      <option value="signal">Sort: Signal</option>
+      <option value="name">Sort: Name</option>
+      <option value="type">Sort: Type</option>
+    </select>
+  </div>
+
+  <!-- Device Grid -->
+  <div class="section-title" id="result-label">DETECTED DEVICES</div>
+  <div class="device-grid" id="device-grid">
+    <div class="empty-state">
+      <div class="big">📡</div>
+      <p>WAITING FOR SCANNER DATA<br>MAKE SURE scanner.py IS RUNNING<br>AND http.server IS ACTIVE</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    DEVICE SCANNER v2.0 · WIFI + BLUETOOTH · AUTO REFRESH 5s
   </div>
 </div>
-
-<div class="grid" id="deviceGrid">
-  <div class="no-data">Waiting for scanner data...<br><br>Make sure scanner.py is running!</div>
-</div>
-
-<div class="timestamp" id="timestamp">Last updated: --</div>
 
 <script>
-function getSignalPercent(rssi) {
-  const min = -100, max = -30;
-  return Math.max(0, Math.min(100, ((rssi - min) / (max - min)) * 100));
+// ── State ──────────────────────────────────────────────────────────────
+let allDevices = [];
+let activeFilter = 'all';
+let activeSort = 'distance';
+
+// ── Icons & Labels ─────────────────────────────────────────────────────
+const TYPE_ICON = {
+  mobile:     '📱',
+  router:     '🌐',
+  laptop:     '💻',
+  audio:      '🎧',
+  wearable:   '⌚',
+  peripheral: '🖱️',
+  other:      '📶',
+  unknown:    '❓'
+};
+
+const TYPE_LABEL = {
+  mobile:     'Mobile Device',
+  router:     'Router / AP',
+  laptop:     'Laptop',
+  audio:      'Audio Device',
+  wearable:   'Wearable',
+  peripheral: 'Peripheral',
+  other:      'Other Device',
+  unknown:    'Unknown'
+};
+
+const SOURCE_CARD_CLASS = { wifi: 'card-wifi', bluetooth: 'card-bt' };
+const TYPE_CARD_CLASS = {
+  mobile: 'card-mobile', router: 'card-router',
+  laptop: 'card-laptop', audio: 'card-audio', wearable: 'card-wearable'
+};
+
+// ── Signal % ───────────────────────────────────────────────────────────
+function sigPct(rssi) {
+  return Math.max(0, Math.min(100, ((rssi - (-100)) / 70) * 100));
 }
 
-async function loadData() {
-  try {
-    const res = await fetch('scan_data.json?t=' + Date.now());
-    const data = await res.json();
-
-    document.getElementById('count').textContent = data.count;
-    document.getElementById('closest').textContent = data.devices.length > 0 ? data.devices[0].distance : '--';
-    document.getElementById('timestamp').textContent = 'Last updated: ' + data.timestamp;
-
-    const grid = document.getElementById('deviceGrid');
-    grid.innerHTML = '';
-
-    data.devices.forEach((d, i) => {
-      const pct = getSignalPercent(d.rssi);
-      const card = document.createElement('div');
-      card.className = 'device-card';
-      card.innerHTML = `
-        <div class="distance-badge">~${d.distance}m</div>
-        <div class="device-name">📱 ${d.name}</div>
-        <div class="device-info">MAC: <span>${d.mac}</span></div>
-        <div class="device-info">Signal: <span>${d.rssi} dBm — ${d.signal_quality}</span></div>
-        <div class="device-info">Frequency: <span>${(d.freq / 1000000).toFixed(1)} GHz</span></div>
-        <div class="signal-bar">
-          <div class="signal-fill" style="width:${pct}%"></div>
-        </div>
-      `;
-      grid.appendChild(card);
-    });
-
-  } catch (e) {
-    console.log('Waiting for data...', e);
+// ── Filter & Sort ──────────────────────────────────────────────────────
+function applyFilter(devices) {
+  switch (activeFilter) {
+    case 'wifi':      return devices.filter(d => d.source === 'wifi');
+    case 'bluetooth': return devices.filter(d => d.source === 'bluetooth');
+    case 'nearby':    return devices.filter(d => d.distance > 0 && d.distance <= 5);
+    case 'mobile':    return devices.filter(d => d.type === 'mobile');
+    case 'router':    return devices.filter(d => d.type === 'router');
+    case '2.4ghz':    return devices.filter(d => d.band === '2.4 GHz');
+    case '5ghz':      return devices.filter(d => d.band === '5 GHz');
+    default:          return devices;
   }
 }
 
+function applySort(devices) {
+  const arr = [...devices];
+  switch (activeSort) {
+    case 'signal':   return arr.sort((a,b) => b.rssi - a.rssi);
+    case 'name':     return arr.sort((a,b) => a.name.localeCompare(b.name));
+    case 'type':     return arr.sort((a,b) => a.type.localeCompare(b.type));
+    default:         return arr.sort((a,b) => {
+      const da = a.distance <= 0 ? 9999 : a.distance;
+      const db = b.distance <= 0 ? 9999 : b.distance;
+      return da - db;
+    });
+  }
+}
+
+// ── Render Cards ───────────────────────────────────────────────────────
+function renderDevices(devices) {
+  const grid = document.getElementById('device-grid');
+  const label = document.getElementById('result-label');
+
+  const filtered = applySort(applyFilter(devices));
+  label.textContent = `DETECTED DEVICES — ${filtered.length} SHOWN`;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>NO DEVICES MATCH CURRENT FILTER</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  filtered.forEach((d, i) => {
+    const icon = TYPE_ICON[d.type] || '📶';
+    const typeLabel = TYPE_LABEL[d.type] || 'Device';
+    const srcClass = SOURCE_CARD_CLASS[d.source] || '';
+    const typeClass = TYPE_CARD_CLASS[d.type] || '';
+    const cardClass = typeClass || srcClass;
+    const pct = sigPct(d.rssi);
+    const distText = d.distance > 0 ? `${d.distance}m` : 'N/A';
+    const freqText = d.source === 'bluetooth' ? 'Bluetooth' : `${d.freq} GHz`;
+    const bandText = d.band || '—';
+    const macShort = d.mac.length > 12 ? d.mac.slice(0,14)+'…' : d.mac;
+
+    const card = document.createElement('div');
+    card.className = `device-card ${cardClass}`;
+    card.style.animationDelay = `${i * 0.04}s`;
+    card.innerHTML = `
+      <span class="source-chip">${d.source === 'bluetooth' ? 'BT' : 'WIFI'}</span>
+      <div class="card-header">
+        <div class="device-icon-wrap">${icon}</div>
+        <div class="card-name-wrap">
+          <div class="device-name" title="${d.name}">${d.name}</div>
+          <div class="device-type-badge">${typeLabel}</div>
+        </div>
+        <div class="distance-badge">~${distText}</div>
+      </div>
+      <div class="card-info">
+        <div class="info-row">SIGNAL <span>${d.rssi} dBm</span></div>
+        <div class="info-row">QUALITY <span>${d.signal_quality}</span></div>
+        <div class="info-row">BAND <span>${bandText}</span></div>
+        <div class="info-row">FREQ <span>${freqText}</span></div>
+        <div class="info-row" style="grid-column:1/-1">MAC <span>${macShort}</span></div>
+      </div>
+      <div class="signal-track">
+        <div class="signal-fill" style="width:${pct}%"></div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ── Update Stats ───────────────────────────────────────────────────────
+function updateStats(data) {
+  document.getElementById('s-total').textContent  = data.total   ?? '--';
+  document.getElementById('s-wifi').textContent   = data.wifi_count  ?? '--';
+  document.getElementById('s-bt').textContent     = data.bt_count    ?? '--';
+  document.getElementById('s-mobile').textContent = data.mobile_count ?? '--';
+  document.getElementById('s-router').textContent = data.router_count ?? '--';
+  document.getElementById('s-nearby').textContent = data.nearby_count ?? '--';
+  document.getElementById('status-time').textContent = data.timestamp ?? '--';
+  document.getElementById('scan-num').textContent = '#' + (data.scan_number ?? '?');
+}
+
+// ── Fetch Data ─────────────────────────────────────────────────────────
+async function loadData() {
+  try {
+    const res = await fetch('scan_data.json?t=' + Date.now());
+    if (!res.ok) return;
+    const data = await res.json();
+    allDevices = data.devices || [];
+    updateStats(data);
+    renderDevices(allDevices);
+  } catch (e) {
+    console.log('Waiting for data...', e.message);
+  }
+}
+
+// ── Filter Buttons ─────────────────────────────────────────────────────
+document.getElementById('filter-group').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.filter;
+  renderDevices(allDevices);
+});
+
+document.getElementById('sort-select').addEventListener('change', e => {
+  activeSort = e.target.value;
+  renderDevices(allDevices);
+});
+
+// ── Init ───────────────────────────────────────────────────────────────
 loadData();
 setInterval(loadData, 5000);
 </script>
