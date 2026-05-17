@@ -1,0 +1,11 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Scan data (auto-generated, no need to upload)
+scan_data.json
+
+# Windows junk
+Thumbs.db
+desktop.ini

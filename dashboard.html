@@ -2,588 +2,219 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Device Scanner</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:        #060810;
-  --surface:   #0d1117;
-  --surface2:  #111827;
-  --border:    rgba(0,220,255,0.12);
-  --border-hi: rgba(0,220,255,0.5);
-  --cyan:      #00dcff;
-  --cyan-dim:  rgba(0,220,255,0.6);
-  --cyan-glow: rgba(0,220,255,0.15);
-  --green:     #00ff9d;
-  --orange:    #ff9500;
-  --red:       #ff3b5c;
-  --purple:    #bf5fff;
-  --yellow:    #ffe135;
-  --text:      #c8d8e8;
-  --text-dim:  rgba(200,216,232,0.45);
-  --mono:      'Share Tech Mono', monospace;
-  --display:   'Orbitron', sans-serif;
-  --radius:    10px;
+  --bg:      #0a0c10;
+  --s1:      #0f1218;
+  --s2:      #141820;
+  --border:  #1e2430;
+  --borderhi:#2e3f55;
+  --text:    #c9d4e0;
+  --dim:     #4a5a6e;
+  --dim2:    #2a3545;
+  --cyan:    #38bdf8;
+  --green:   #34d399;
+  --orange:  #fb923c;
+  --red:     #f87171;
+  --purple:  #a78bfa;
+  --yellow:  #fbbf24;
+  --blue:    #60a5fa;
+  --mono:    'JetBrains Mono', monospace;
+  --sans:    'Inter', sans-serif;
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 html { scroll-behavior: smooth; }
 
 body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--mono);
-  min-height: 100vh;
-  overflow-x: hidden;
-  position: relative;
+  background: var(--bg); color: var(--text);
+  font-family: var(--sans); font-size: 13px;
+  min-height: 100vh; overflow-x: hidden;
 }
-
-/* Animated grid background */
 body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0;
   background-image:
-    linear-gradient(rgba(0,220,255,0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,220,255,0.03) 1px, transparent 1px);
+    linear-gradient(rgba(56,189,248,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56,189,248,.025) 1px, transparent 1px);
   background-size: 40px 40px;
-  pointer-events: none;
-  z-index: 0;
 }
 
-/* Glow orbs */
-body::after {
-  content: '';
-  position: fixed;
-  top: -200px; left: -200px;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(0,220,255,0.06) 0%, transparent 70%);
-  pointer-events: none;
-  z-index: 0;
-  animation: orb 12s ease-in-out infinite alternate;
-}
-
-@keyframes orb {
-  from { transform: translate(0,0); }
-  to   { transform: translate(300px, 200px); }
-}
-
-.wrapper { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 16px; }
+.wrap { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 18px 20px 40px; }
 
 /* ── Header ── */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20px 0 16px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
+.hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 14px; border-bottom: 1px solid var(--border);
+  margin-bottom: 18px; flex-wrap: wrap; gap: 10px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 8px var(--green);
+  animation: blink 2s ease-in-out infinite; flex-shrink: 0;
+  transition: background .3s, box-shadow .3s;
+}
+.logo-dot.offline { background: var(--red); box-shadow: 0 0 8px var(--red); animation: none; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.logo h1 { font-family: var(--mono); font-size: 14px; font-weight: 500; color: var(--text); letter-spacing: 1.5px; }
+.logo h1 span { color: var(--cyan); }
+.meta { font-family: var(--mono); font-size: 11px; color: var(--dim); display: flex; align-items: center; gap: 10px; }
+.meta b { color: var(--cyan); font-weight: 500; }
+.meta .sep { color: var(--dim2); }
+
+/* ── Stats ── */
+.stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 14px; }
+.sc {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 8px; padding: 11px 13px;
+  display: flex; align-items: center; gap: 10px;
+  transition: border-color .2s, transform .15s;
+}
+.sc:hover { border-color: var(--borderhi); transform: translateY(-1px); }
+.sc-ico { font-size: 15px; flex-shrink: 0; }
+.sc-val { font-family: var(--mono); font-size: 22px; font-weight: 500; line-height: 1; color: var(--c, var(--text)); }
+.sc-lbl { font-size: 10px; color: var(--dim); margin-top: 2px; white-space: nowrap; }
+.sc.c-cyan{--c:var(--cyan)} .sc.c-green{--c:var(--green)} .sc.c-purple{--c:var(--purple)}
+.sc.c-red{--c:var(--red)} .sc.c-orange{--c:var(--orange)} .sc.c-yellow{--c:var(--yellow)}
+
+/* ── Toolbar ── */
+.toolbar { display: flex; align-items: center; gap: 7px; margin-bottom: 12px; flex-wrap: wrap; }
+.tlbl { font-size: 10px; color: var(--dim); font-family: var(--mono); letter-spacing: .5px; }
+.fb {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 5px; color: var(--dim); font-family: var(--mono);
+  font-size: 10px; padding: 4px 11px; cursor: pointer;
+  transition: all .15s; white-space: nowrap; letter-spacing: .3px;
+}
+.fb:hover { border-color: var(--borderhi); color: var(--text); }
+.fb.on         { background: rgba(56,189,248,.1);  border-color: var(--cyan);   color: var(--cyan); }
+.fb.f-bt.on    { background: rgba(167,139,250,.1); border-color: var(--purple); color: var(--purple); }
+.fb.f-wifi.on  { background: rgba(52,211,153,.08); border-color: var(--green);  color: var(--green); }
+.fb.f-near.on  { background: rgba(251,146,60,.08); border-color: var(--orange); color: var(--orange); }
+.fb.f-mob.on   { background: rgba(248,113,113,.08);border-color: var(--red);    color: var(--red); }
+.fb.f-rtr.on   { background: rgba(251,146,60,.08); border-color: var(--orange); color: var(--orange); }
+.spacer { flex: 1; }
+.ssort {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--text); font-family: var(--mono);
+  font-size: 10px; padding: 4px 10px; cursor: pointer; outline: none;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 14px;
+/* ── Section label ── */
+.sec-hdr {
+  font-family: var(--mono); font-size: 10px; color: var(--dim);
+  letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 8px; display: flex; align-items: center; gap: 10px;
 }
+.sec-hdr::after { content:''; flex:1; height:1px; background:var(--border); }
 
-.logo-icon {
-  width: 42px; height: 42px;
-  border: 2px solid var(--cyan);
-  border-radius: 10px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 20px;
-  box-shadow: 0 0 20px var(--cyan-glow), inset 0 0 10px var(--cyan-glow);
-  animation: icon-pulse 3s ease-in-out infinite;
+/* ── Table ── */
+.tbl-wrap { background: var(--s1); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead tr { border-bottom: 1px solid var(--border); }
+th {
+  font-family: var(--mono); font-size: 9px; font-weight: 500;
+  color: var(--dim); text-transform: uppercase; letter-spacing: .8px;
+  padding: 8px 12px; text-align: left; white-space: nowrap;
 }
+tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--s2); }
+tbody tr.is-new { animation: rowIn .3s ease both; }
+@keyframes rowIn { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:none} }
+td { padding: 9px 12px; vertical-align: middle; }
 
-@keyframes icon-pulse {
-  0%,100% { box-shadow: 0 0 20px var(--cyan-glow), inset 0 0 10px var(--cyan-glow); }
-  50% { box-shadow: 0 0 35px rgba(0,220,255,0.3), inset 0 0 20px rgba(0,220,255,0.2); }
+/* Device cell */
+.dev-cell { display: flex; align-items: center; gap: 9px; min-width: 140px; }
+.dev-ico {
+  width: 30px; height: 30px; min-width: 30px; border-radius: 7px;
+  background: var(--s2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 13px;
 }
+.dev-name { font-weight: 500; color: var(--text); font-size: 12px; max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dev-sub  { font-size: 10px; color: var(--dim); margin-top: 1px; font-family: var(--mono); }
 
-.logo-text h1 {
-  font-family: var(--display);
-  font-size: clamp(14px, 3vw, 20px);
-  font-weight: 900;
-  color: var(--cyan);
-  letter-spacing: 3px;
-  text-shadow: 0 0 20px var(--cyan);
+/* Badge */
+.badge {
+  display: inline-block; font-family: var(--mono); font-size: 9px;
+  padding: 2px 7px; border-radius: 4px; border: 1px solid;
+  white-space: nowrap; font-weight: 500; letter-spacing: .5px;
 }
+.bw { color:var(--green);  border-color:rgba(52,211,153,.35);  background:rgba(52,211,153,.07); }
+.bb { color:var(--purple); border-color:rgba(167,139,250,.35); background:rgba(167,139,250,.07); }
+.bew{ color:var(--cyan);   border-color:rgba(56,189,248,.35);  background:rgba(56,189,248,.07); }
+.beb{ color:var(--blue);   border-color:rgba(96,165,250,.35);  background:rgba(96,165,250,.07); }
+.bl { color:var(--yellow); border-color:rgba(251,191,36,.35);  background:rgba(251,191,36,.07); }
 
-.logo-text p {
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 2px;
-  margin-top: 2px;
-}
+/* Signal bars */
+.sig-wrap { display:flex; align-items:center; gap:6px; }
+.sig-bars { display:flex; align-items:flex-end; gap:2px; height:14px; }
+.sig-bar  { width:4px; border-radius:1px; background:var(--dim2); }
+.sig-bar.on { background:var(--bc,var(--green)); }
+.sig-bar:nth-child(1){height:4px} .sig-bar:nth-child(2){height:7px}
+.sig-bar:nth-child(3){height:10px} .sig-bar:nth-child(4){height:14px}
+.sig-val { font-family:var(--mono); font-size:10px; color:var(--dim); min-width:54px; }
 
-.status-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--text-dim);
-  letter-spacing: 1px;
-}
+.dist-val { font-family:var(--mono); font-size:12px; font-weight:500; }
+.dist-na  { font-family:var(--mono); font-size:11px; color:var(--dim); }
+.mono-sm  { font-family:var(--mono); font-size:10px; color:var(--dim); }
 
-.live-dot {
-  width: 8px; height: 8px;
-  background: var(--green);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--green);
-  animation: blink 1.5s ease-in-out infinite;
-}
+/* Empty */
+.empty-row td { text-align:center; padding:52px; font-family:var(--mono); font-size:11px; color:var(--dim); letter-spacing:1px; line-height:2.2; }
+.eico { font-size:30px; display:block; margin-bottom:10px; }
 
-@keyframes blink {
-  0%,100% { opacity: 1; }
-  50% { opacity: 0.2; }
-}
+/* Footer */
+.ftr { text-align:center; padding-top:18px; margin-top:20px; border-top:1px solid var(--border); font-family:var(--mono); font-size:9px; color:var(--dim2); letter-spacing:1px; }
 
-#status-time { color: var(--cyan); }
-#scan-num { color: var(--green); }
+::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-track{background:var(--bg)} ::-webkit-scrollbar-thumb{background:var(--borderhi);border-radius:2px}
 
-/* ── Stats Row ── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.stat-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px 12px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s, transform 0.2s;
-}
-
-.stat-card:hover {
-  border-color: var(--border-hi);
-  transform: translateY(-2px);
-}
-
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 2px;
-  background: var(--accent, var(--cyan));
-  opacity: 0.7;
-}
-
-.stat-card.green  { --accent: var(--green); }
-.stat-card.orange { --accent: var(--orange); }
-.stat-card.purple { --accent: var(--purple); }
-.stat-card.red    { --accent: var(--red); }
-.stat-card.yellow { --accent: var(--yellow); }
-
-.stat-num {
-  font-family: var(--display);
-  font-size: clamp(22px, 5vw, 32px);
-  font-weight: 700;
-  color: var(--accent, var(--cyan));
-  text-shadow: 0 0 15px var(--accent, var(--cyan));
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 9px;
-  color: var(--text-dim);
-  letter-spacing: 1.5px;
-  margin-top: 6px;
-  text-transform: uppercase;
-}
-
-.stat-icon { font-size: 18px; margin-bottom: 6px; }
-
-/* ── Filter Bar ── */
-.filter-bar {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px 14px;
-  margin-bottom: 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.filter-label {
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-right: 4px;
-  white-space: nowrap;
-}
-
-.filter-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  flex: 1;
-}
-
-.filter-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 1px;
-  padding: 5px 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.filter-btn:hover {
-  border-color: var(--cyan-dim);
-  color: var(--cyan);
-}
-
-.filter-btn.active {
-  background: var(--cyan-glow);
-  border-color: var(--cyan);
-  color: var(--cyan);
-  box-shadow: 0 0 10px var(--cyan-glow);
-}
-
-.filter-btn.bt.active {
-  background: rgba(191,95,255,0.15);
-  border-color: var(--purple);
-  color: var(--purple);
-  box-shadow: 0 0 10px rgba(191,95,255,0.2);
-}
-
-.filter-btn.wifi.active {
-  background: rgba(0,255,157,0.1);
-  border-color: var(--green);
-  color: var(--green);
-}
-
-.filter-btn.nearby.active {
-  background: rgba(255,149,0,0.1);
-  border-color: var(--orange);
-  color: var(--orange);
-}
-
-.filter-btn.mobile.active {
-  background: rgba(255,59,92,0.1);
-  border-color: var(--red);
-  color: var(--red);
-}
-
-.sort-select {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 1px;
-  padding: 5px 10px;
-  cursor: pointer;
-  outline: none;
-}
-
-/* ── Device Grid ── */
-.section-title {
-  font-family: var(--display);
-  font-size: 11px;
-  letter-spacing: 3px;
-  color: var(--text-dim);
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.section-title::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-.device-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
-
-/* ── Device Card ── */
-.device-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 14px;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.25s;
-  cursor: default;
-  animation: card-in 0.4s ease both;
-}
-
-@keyframes card-in {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.device-card:hover {
-  border-color: var(--card-accent, var(--cyan-dim));
-  transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.4), 0 0 0 1px var(--card-accent, var(--cyan-dim));
-}
-
-.device-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
-  width: 3px; height: 100%;
-  background: var(--card-accent, var(--cyan));
-}
-
-.device-card::after {
-  content: '';
-  position: absolute;
-  top: 0; right: 0;
-  width: 60px; height: 60px;
-  background: radial-gradient(circle at top right, var(--card-glow, rgba(0,220,255,0.08)), transparent 70%);
-  pointer-events: none;
-}
-
-/* Card themes by source */
-.card-wifi   { --card-accent: var(--green);  --card-glow: rgba(0,255,157,0.08); }
-.card-bt     { --card-accent: var(--purple); --card-glow: rgba(191,95,255,0.08); }
-
-/* Card themes by type */
-.card-mobile   { --card-accent: var(--cyan);   --card-glow: rgba(0,220,255,0.08); }
-.card-router   { --card-accent: var(--orange); --card-glow: rgba(255,149,0,0.08); }
-.card-laptop   { --card-accent: #4ea8de;       --card-glow: rgba(78,168,222,0.08); }
-.card-audio    { --card-accent: var(--yellow); --card-glow: rgba(255,225,53,0.08); }
-.card-wearable { --card-accent: var(--red);    --card-glow: rgba(255,59,92,0.08); }
-
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  gap: 8px;
-}
-
-.device-icon-wrap {
-  width: 36px; height: 36px; min-width: 36px;
-  background: var(--card-glow, rgba(0,220,255,0.08));
-  border: 1px solid var(--card-accent, var(--cyan-dim));
-  border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
-}
-
-.card-name-wrap { flex: 1; min-width: 0; }
-
-.device-name {
-  font-family: var(--display);
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 1px;
-}
-
-.device-type-badge {
-  font-size: 8px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--card-accent, var(--cyan));
-  margin-top: 3px;
-  opacity: 0.8;
-}
-
-.distance-badge {
-  background: var(--card-glow, var(--cyan-glow));
-  border: 1px solid var(--card-accent, var(--border-hi));
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-family: var(--display);
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--card-accent, var(--cyan));
-  white-space: nowrap;
-  text-shadow: 0 0 10px var(--card-accent, var(--cyan));
-}
-
-.card-info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 10px;
-  margin: 10px 0;
-}
-
-.info-row {
-  font-size: 9px;
-  color: var(--text-dim);
-  letter-spacing: 0.5px;
-}
-
-.info-row span {
-  color: var(--text);
-  font-size: 10px;
-}
-
-/* Signal bar */
-.signal-track {
-  height: 3px;
-  background: rgba(255,255,255,0.06);
-  border-radius: 2px;
-  margin-top: 10px;
-  overflow: hidden;
-}
-
-.signal-fill {
-  height: 100%;
-  border-radius: 2px;
-  background: linear-gradient(90deg, var(--red), var(--orange), var(--green));
-  transition: width 0.8s ease;
-}
-
-/* Source badge top right */
-.source-chip {
-  position: absolute;
-  top: 10px; right: 10px;
-  font-size: 8px;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--card-glow, var(--cyan-glow));
-  color: var(--card-accent, var(--cyan));
-  border: 1px solid var(--card-accent, var(--cyan-dim));
-}
-
-/* ── Empty state ── */
-.empty-state {
-  grid-column: 1/-1;
-  text-align: center;
-  padding: 60px 20px;
-  color: var(--text-dim);
-}
-
-.empty-state .big { font-size: 40px; margin-bottom: 16px; }
-.empty-state p { font-size: 12px; letter-spacing: 2px; line-height: 2; }
-
-/* ── Footer ── */
-.footer {
-  text-align: center;
-  padding: 20px 0 10px;
-  font-size: 10px;
-  color: var(--text-dim);
-  letter-spacing: 2px;
-  border-top: 1px solid var(--border);
-  margin-top: 24px;
-}
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 2px; }
-
-/* ── Responsive ── */
-@media (max-width: 600px) {
-  .header { flex-direction: column; align-items: flex-start; }
-  .stats-row { grid-template-columns: repeat(3, 1fr); }
-  .device-grid { grid-template-columns: 1fr; }
-  .filter-bar { padding: 10px; }
-  .card-info { grid-template-columns: 1fr; }
-}
-
-@media (max-width: 400px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-}
+@media(max-width:1000px){.col-freq,.col-mac{display:none}}
+@media(max-width:780px){.col-band{display:none} .stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<div class="wrapper">
+<div class="wrap">
 
-  <!-- Header -->
-  <header class="header">
+  <header class="hdr">
     <div class="logo">
-      <div class="logo-icon">📡</div>
-      <div class="logo-text">
-        <h1>DEVICE SCANNER</h1>
-        <p>WIFI + BLUETOOTH · LIVE DETECTION</p>
-      </div>
+      <div class="logo-dot" id="dot"></div>
+      <h1>DEVICE <span>SCANNER</span></h1>
     </div>
-    <div class="status-bar">
-      <div class="live-dot"></div>
-      <span>SCAN <span id="scan-num">#0</span></span>
-      <span>·</span>
-      <span id="status-time">--:--:--</span>
+    <div class="meta">
+      <span>Scan <b id="snum">#—</b></span>
+      <span class="sep">·</span>
+      <span id="stime">--:--:--</span>
+      <span class="sep">·</span>
+      <span>auto-refresh 5s</span>
     </div>
   </header>
 
-  <!-- Stats -->
-  <div class="stats-row">
-    <div class="stat-card">
-      <div class="stat-icon">📶</div>
-      <div class="stat-num" id="s-total">--</div>
-      <div class="stat-label">Total Devices</div>
-    </div>
-    <div class="stat-card green">
-      <div class="stat-icon">🛜</div>
-      <div class="stat-num" id="s-wifi">--</div>
-      <div class="stat-label">WiFi</div>
-    </div>
-    <div class="stat-card purple">
-      <div class="stat-icon">🔵</div>
-      <div class="stat-num" id="s-bt">--</div>
-      <div class="stat-label">Bluetooth</div>
-    </div>
-    <div class="stat-card red">
-      <div class="stat-icon">📱</div>
-      <div class="stat-num" id="s-mobile">--</div>
-      <div class="stat-label">Mobiles</div>
-    </div>
-    <div class="stat-card orange">
-      <div class="stat-icon">🌐</div>
-      <div class="stat-num" id="s-router">--</div>
-      <div class="stat-label">Routers</div>
-    </div>
-    <div class="stat-card yellow">
-      <div class="stat-icon">📍</div>
-      <div class="stat-num" id="s-nearby">--</div>
-      <div class="stat-label">Nearby (&lt;5m)</div>
-    </div>
+  <div class="stats">
+    <div class="sc c-cyan">  <div class="sc-ico">📶</div><div><div class="sc-val" id="st">—</div><div class="sc-lbl">Total</div></div></div>
+    <div class="sc c-green"> <div class="sc-ico">🛜</div><div><div class="sc-val" id="sw">—</div><div class="sc-lbl">WiFi</div></div></div>
+    <div class="sc c-purple"><div class="sc-ico">🔵</div><div><div class="sc-val" id="sb">—</div><div class="sc-lbl">Bluetooth</div></div></div>
+    <div class="sc c-red">   <div class="sc-ico">📱</div><div><div class="sc-val" id="sm">—</div><div class="sc-lbl">Mobiles</div></div></div>
+    <div class="sc c-orange"><div class="sc-ico">🌐</div><div><div class="sc-val" id="sr">—</div><div class="sc-lbl">Routers</div></div></div>
+    <div class="sc c-yellow"><div class="sc-ico">📍</div><div><div class="sc-val" id="sn">—</div><div class="sc-lbl">Nearby &lt;5m</div></div></div>
   </div>
 
-  <!-- Filter Bar -->
-  <div class="filter-bar">
-    <span class="filter-label">Filter:</span>
-    <div class="filter-group" id="filter-group">
-      <button class="filter-btn active" data-filter="all">All</button>
-      <button class="filter-btn wifi" data-filter="wifi">🛜 WiFi</button>
-      <button class="filter-btn bt" data-filter="bluetooth">🔵 Bluetooth</button>
-      <button class="filter-btn nearby" data-filter="nearby">📍 Nearby &lt;5m</button>
-      <button class="filter-btn mobile" data-filter="mobile">📱 Mobile</button>
-      <button class="filter-btn" data-filter="router">🌐 Router</button>
-      <button class="filter-btn" data-filter="2.4ghz">2.4 GHz</button>
-      <button class="filter-btn" data-filter="5ghz">5 GHz</button>
+  <div class="toolbar">
+    <span class="tlbl">Filter</span>
+    <div id="fgrp" style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="fb on"       data-f="all">All</button>
+      <button class="fb f-wifi"   data-f="wifi">WiFi</button>
+      <button class="fb f-bt"     data-f="bluetooth">Bluetooth</button>
+      <button class="fb f-near"   data-f="nearby">Nearby &lt;5m</button>
+      <button class="fb f-mob"    data-f="mobile">Mobile</button>
+      <button class="fb f-rtr"    data-f="router">Router</button>
+      <button class="fb"          data-f="24ghz">2.4 GHz</button>
+      <button class="fb"          data-f="5ghz">5 GHz</button>
     </div>
-    <select class="sort-select" id="sort-select">
+    <div class="spacer"></div>
+    <select class="ssort" id="ssort">
       <option value="distance">Sort: Distance</option>
       <option value="signal">Sort: Signal</option>
       <option value="name">Sort: Name</option>
@@ -591,186 +222,217 @@ body::after {
     </select>
   </div>
 
-  <!-- Device Grid -->
-  <div class="section-title" id="result-label">DETECTED DEVICES</div>
-  <div class="device-grid" id="device-grid">
-    <div class="empty-state">
-      <div class="big">📡</div>
-      <p>WAITING FOR SCANNER DATA<br>MAKE SURE scanner.py IS RUNNING<br>AND http.server IS ACTIVE</p>
-    </div>
+  <div class="sec-hdr" id="rlabel">DETECTED DEVICES</div>
+  <div class="tbl-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th>Source</th>
+          <th>Type</th>
+          <th>Signal</th>
+          <th>Distance</th>
+          <th class="col-band">Band</th>
+          <th class="col-freq">Freq</th>
+          <th class="col-mac">MAC / IP</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr class="empty-row"><td colspan="8">
+          <span class="eico">📡</span>
+          WAITING FOR SCANNER DATA<br>
+          <span style="color:var(--dim2)">python scanner.py &nbsp;·&nbsp; python -m http.server 8000</span>
+        </td></tr>
+      </tbody>
+    </table>
   </div>
 
-  <div class="footer">
-    DEVICE SCANNER v2.0 · WIFI + BLUETOOTH · AUTO REFRESH 5s
-  </div>
+  <div class="ftr">DEVICE SCANNER v3.0 &nbsp;·&nbsp; WIFI + BLE + ARP + ESP32 &nbsp;·&nbsp; LIVE</div>
 </div>
 
 <script>
-// ── State ──────────────────────────────────────────────────────────────
-let allDevices = [];
-let activeFilter = 'all';
-let activeSort = 'distance';
+// ── State ──────────────────────────────────────────────────────────────────
+let FILTER = 'all', SORT = 'distance';
+// No client-side TTL cache — we trust the scanner's CACHE_TTL fully.
+// Devices in scan_data.json are already freshness-filtered by scanner.py.
+// The dashboard simply renders exactly what the scanner says is live.
+let SESSION = null;
+let lastOk = true;
+let ALL_DEVS = [];  // current live device list from scanner
 
-// ── Icons & Labels ─────────────────────────────────────────────────────
-const TYPE_ICON = {
-  mobile:     '📱',
-  router:     '🌐',
-  laptop:     '💻',
-  audio:      '🎧',
-  wearable:   '⌚',
-  peripheral: '🖱️',
-  other:      '📶',
-  unknown:    '❓'
-};
+// ── Metadata ───────────────────────────────────────────────────────────────
+const ICONS = { mobile:'📱',router:'🌐',laptop:'💻',audio:'🎧',wearable:'⌚',peripheral:'🖱️',other:'📶',unknown:'❓' };
+const TLBL  = { mobile:'Mobile',router:'Router / AP',laptop:'Laptop',audio:'Audio',wearable:'Wearable',peripheral:'Peripheral',other:'Other',unknown:'Unknown' };
+const TCOL  = { mobile:'var(--cyan)',router:'var(--orange)',laptop:'var(--blue)',audio:'var(--yellow)',wearable:'var(--red)',other:'var(--dim)',unknown:'var(--dim)' };
+const BMAP  = { wifi:['WIFI','bw'],bluetooth:['BT','bb'],esp32_wifi:['ESP·WiFi','bew'],esp32_ble:['ESP·BLE','beb'],arp:['LAN','bl'] };
 
-const TYPE_LABEL = {
-  mobile:     'Mobile Device',
-  router:     'Router / AP',
-  laptop:     'Laptop',
-  audio:      'Audio Device',
-  wearable:   'Wearable',
-  peripheral: 'Peripheral',
-  other:      'Other Device',
-  unknown:    'Unknown'
-};
+// ── Helpers ────────────────────────────────────────────────────────────────
+const cKey = d => (d.mac && d.mac !== 'BT') ? d.mac : 'n:' + d.name.toLowerCase();
 
-const SOURCE_CARD_CLASS = { wifi: 'card-wifi', bluetooth: 'card-bt' };
-const TYPE_CARD_CLASS = {
-  mobile: 'card-mobile', router: 'card-router',
-  laptop: 'card-laptop', audio: 'card-audio', wearable: 'card-wearable'
-};
-
-// ── Signal % ───────────────────────────────────────────────────────────
-function sigPct(rssi) {
-  return Math.max(0, Math.min(100, ((rssi - (-100)) / 70) * 100));
+function fmtDist(d) {
+  if (d.distance > 0) return `<span class="dist-val">${d.distance} m</span>`;
+  if (d.source === 'arp') return `<span class="dist-na">LAN</span>`;
+  return `<span class="dist-na">—</span>`;
+}
+function fmtFreq(d) {
+  if (d.source==='bluetooth'||d.source==='esp32_ble') return 'BT';
+  if (d.source==='arp') return 'LAN';
+  return (d.freq && d.freq!==0) ? d.freq+' GHz' : '—';
+}
+function fmtMac(d) {
+  if (d.ip) return d.ip;
+  return (d.mac && d.mac!=='BT') ? d.mac.slice(0,17) : '—';
+}
+function sigBars(rssi) {
+  const pct = Math.max(0,Math.min(100,((rssi+100)/70)*100));
+  const lit = pct>=75?4:pct>=50?3:pct>=25?2:1;
+  const col = pct>=60?'var(--green)':pct>=30?'var(--yellow)':'var(--red)';
+  let b='';
+  for(let i=1;i<=4;i++) b+=`<div class="sig-bar${i<=lit?' on':''}"${i<=lit?` style="--bc:${col}"`:''}></div>`;
+  return `<div class="sig-wrap"><div class="sig-bars">${b}</div><span class="sig-val">${rssi} dBm</span></div>`;
+}
+function badge(src) {
+  const [lbl,cls] = BMAP[src]||[src.toUpperCase(),'bb'];
+  return `<span class="badge ${cls}">${lbl}</span>`;
 }
 
-// ── Filter & Sort ──────────────────────────────────────────────────────
-function applyFilter(devices) {
-  switch (activeFilter) {
-    case 'wifi':      return devices.filter(d => d.source === 'wifi');
-    case 'bluetooth': return devices.filter(d => d.source === 'bluetooth');
-    case 'nearby':    return devices.filter(d => d.distance > 0 && d.distance <= 5);
-    case 'mobile':    return devices.filter(d => d.type === 'mobile');
-    case 'router':    return devices.filter(d => d.type === 'router');
-    case '2.4ghz':    return devices.filter(d => d.band === '2.4 GHz');
-    case '5ghz':      return devices.filter(d => d.band === '5 GHz');
-    default:          return devices;
+// ── Filter / Sort ──────────────────────────────────────────────────────────
+function applyFilter(devs) {
+  switch(FILTER) {
+    case 'wifi':      return devs.filter(d=>d.source==='wifi'||d.source==='esp32_wifi');
+    case 'bluetooth': return devs.filter(d=>d.source==='bluetooth'||d.source==='esp32_ble');
+    case 'nearby':    return devs.filter(d=>d.distance>0&&d.distance<=5);
+    case 'mobile':    return devs.filter(d=>d.type==='mobile');
+    case 'router':    return devs.filter(d=>d.type==='router');
+    case '24ghz':     return devs.filter(d=>d.band==='2.4 GHz');
+    case '5ghz':      return devs.filter(d=>d.band==='5 GHz');
+    default:          return devs;
   }
 }
-
-function applySort(devices) {
-  const arr = [...devices];
-  switch (activeSort) {
-    case 'signal':   return arr.sort((a,b) => b.rssi - a.rssi);
-    case 'name':     return arr.sort((a,b) => a.name.localeCompare(b.name));
-    case 'type':     return arr.sort((a,b) => a.type.localeCompare(b.type));
-    default:         return arr.sort((a,b) => {
-      const da = a.distance <= 0 ? 9999 : a.distance;
-      const db = b.distance <= 0 ? 9999 : b.distance;
-      return da - db;
-    });
-  }
+function applySort(devs) {
+  const a=[...devs];
+  if(SORT==='signal') return a.sort((x,y)=>y.rssi-x.rssi);
+  if(SORT==='name')   return a.sort((x,y)=>x.name.localeCompare(y.name));
+  if(SORT==='type')   return a.sort((x,y)=>x.type.localeCompare(y.type));
+  return a.sort((x,y)=>(x.distance>0?x.distance:9999)-(y.distance>0?y.distance:9999));
 }
 
-// ── Render Cards ───────────────────────────────────────────────────────
-function renderDevices(devices) {
-  const grid = document.getElementById('device-grid');
-  const label = document.getElementById('result-label');
+// ── Stats ──────────────────────────────────────────────────────────────────
+function updateStats(devs) {
+  document.getElementById('st').textContent = devs.length;
+  document.getElementById('sw').textContent = devs.filter(d=>d.source==='wifi'||d.source==='esp32_wifi').length;
+  document.getElementById('sb').textContent = devs.filter(d=>d.source==='bluetooth'||d.source==='esp32_ble').length;
+  document.getElementById('sm').textContent = devs.filter(d=>d.type==='mobile').length;
+  document.getElementById('sr').textContent = devs.filter(d=>d.type==='router').length;
+  document.getElementById('sn').textContent = devs.filter(d=>d.distance>0&&d.distance<=5).length;
+}
 
-  const filtered = applySort(applyFilter(devices));
-  label.textContent = `DETECTED DEVICES — ${filtered.length} SHOWN`;
+// ── Render — diff-based, no full redraws ────────────────────────────────────
+function render() {
+  const tbody = document.getElementById('tbody');
 
-  if (!filtered.length) {
-    grid.innerHTML = `<div class="empty-state"><div class="big">🔍</div><p>NO DEVICES MATCH CURRENT FILTER</p></div>`;
+  // Work directly from the authoritative server list — no client TTL
+  const all  = ALL_DEVS;
+  const list = applySort(applyFilter(all));
+  updateStats(all);
+  document.getElementById('rlabel').textContent = 'DETECTED DEVICES — '+list.length+' SHOWN';
+
+  if(!list.length) {
+    tbody.innerHTML='<tr class="empty-row"><td colspan="8"><span class="eico">🔍</span>NO DEVICES MATCH CURRENT FILTER</td></tr>';
     return;
   }
 
-  grid.innerHTML = '';
-  filtered.forEach((d, i) => {
-    const icon = TYPE_ICON[d.type] || '📶';
-    const typeLabel = TYPE_LABEL[d.type] || 'Device';
-    const srcClass = SOURCE_CARD_CLASS[d.source] || '';
-    const typeClass = TYPE_CARD_CLASS[d.type] || '';
-    const cardClass = typeClass || srcClass;
-    const pct = sigPct(d.rssi);
-    const distText = d.distance > 0 ? `${d.distance}m` : 'N/A';
-    const freqText = d.source === 'bluetooth' ? 'Bluetooth' : `${d.freq} GHz`;
-    const bandText = d.band || '—';
-    const macShort = d.mac.length > 12 ? d.mac.slice(0,14)+'…' : d.mac;
+  const curKeys = new Set(list.map(cKey));
 
-    const card = document.createElement('div');
-    card.className = `device-card ${cardClass}`;
-    card.style.animationDelay = `${i * 0.04}s`;
-    card.innerHTML = `
-      <span class="source-chip">${d.source === 'bluetooth' ? 'BT' : 'WIFI'}</span>
-      <div class="card-header">
-        <div class="device-icon-wrap">${icon}</div>
-        <div class="card-name-wrap">
-          <div class="device-name" title="${d.name}">${d.name}</div>
-          <div class="device-type-badge">${typeLabel}</div>
-        </div>
-        <div class="distance-badge">~${distText}</div>
-      </div>
-      <div class="card-info">
-        <div class="info-row">SIGNAL <span>${d.rssi} dBm</span></div>
-        <div class="info-row">QUALITY <span>${d.signal_quality}</span></div>
-        <div class="info-row">BAND <span>${bandText}</span></div>
-        <div class="info-row">FREQ <span>${freqText}</span></div>
-        <div class="info-row" style="grid-column:1/-1">MAC <span>${macShort}</span></div>
-      </div>
-      <div class="signal-track">
-        <div class="signal-fill" style="width:${pct}%"></div>
-      </div>
-    `;
-    grid.appendChild(card);
+  // Remove rows no longer in filtered list
+  tbody.querySelectorAll('tr[data-key]').forEach(tr=>{
+    if(!curKeys.has(tr.dataset.key)) tr.remove();
+  });
+
+  // Add / update rows
+  const existingKeys = new Set([...tbody.querySelectorAll('tr[data-key]')].map(tr=>tr.dataset.key));
+  list.forEach((d,i)=>{
+    const key   = cKey(d);
+    const isNew = !existingKeys.has(key);
+    let tr = tbody.querySelector(`tr[data-key="${CSS.escape(key)}"]`);
+    if(!tr){
+      tr = document.createElement('tr');
+      tr.dataset.key = key;
+      if(isNew){
+        tr.classList.add('is-new');
+        tr.addEventListener('animationend',()=>tr.classList.remove('is-new'),{once:true});
+      }
+    }
+    tr.innerHTML =
+      `<td><div class="dev-cell"><div class="dev-ico">${ICONS[d.type]||'❓'}</div><div>`+
+        `<div class="dev-name" title="${d.name}">${d.name}</div>`+
+        `<div class="dev-sub">${d.signal_quality}</div>`+
+      `</div></div></td>`+
+      `<td>${badge(d.source)}</td>`+
+      `<td><span style="font-size:11px;color:${TCOL[d.type]||'var(--dim)'}">${TLBL[d.type]||'Unknown'}</span></td>`+
+      `<td>${sigBars(d.rssi)}</td>`+
+      `<td>${fmtDist(d)}</td>`+
+      `<td class="col-band mono-sm">${d.band||'—'}</td>`+
+      `<td class="col-freq mono-sm">${fmtFreq(d)}</td>`+
+      `<td class="col-mac mono-sm">${fmtMac(d)}</td>`;
+    const ch=[...tbody.children];
+    if(ch[i]!==tr){ if(i>=ch.length) tbody.appendChild(tr); else tbody.insertBefore(tr,ch[i]); }
   });
 }
 
-// ── Update Stats ───────────────────────────────────────────────────────
-function updateStats(data) {
-  document.getElementById('s-total').textContent  = data.total   ?? '--';
-  document.getElementById('s-wifi').textContent   = data.wifi_count  ?? '--';
-  document.getElementById('s-bt').textContent     = data.bt_count    ?? '--';
-  document.getElementById('s-mobile').textContent = data.mobile_count ?? '--';
-  document.getElementById('s-router').textContent = data.router_count ?? '--';
-  document.getElementById('s-nearby').textContent = data.nearby_count ?? '--';
-  document.getElementById('status-time').textContent = data.timestamp ?? '--';
-  document.getElementById('scan-num').textContent = '#' + (data.scan_number ?? '?');
-}
-
-// ── Fetch Data ─────────────────────────────────────────────────────────
-async function loadData() {
-  try {
-    const res = await fetch('scan_data.json?t=' + Date.now());
-    if (!res.ok) return;
+// ── Fetch ──────────────────────────────────────────────────────────────────
+async function load(){
+  try{
+    const res = await fetch('scan_data.json?t='+Date.now());
+    if(!res.ok){ setDot(false); return; }
     const data = await res.json();
-    allDevices = data.devices || [];
-    updateStats(data);
-    renderDevices(allDevices);
-  } catch (e) {
-    console.log('Waiting for data...', e.message);
-  }
+
+    if(data.scan_number) document.getElementById('snum').textContent = '#'+data.scan_number;
+    if(data.timestamp)   document.getElementById('stime').textContent = data.timestamp;
+
+    // Session change → clear table immediately (scanner restarted)
+    const sid = data.session_id||null;
+    if(sid && sid!==SESSION){
+      ALL_DEVS = [];
+      document.getElementById('tbody').innerHTML='';
+      SESSION=sid;
+    }
+
+    // First scan not done yet
+    if(!data.scan_number){
+      document.getElementById('tbody').innerHTML=
+        '<tr class="empty-row"><td colspan="8"><span class="eico">📡</span>SCANNER STARTED · FIRST SCAN IN PROGRESS...</td></tr>';
+      ['st','sw','sb','sm','sr','sn'].forEach(id=>document.getElementById(id).textContent='—');
+      setDot(true); return;
+    }
+
+    // Replace device list entirely — scanner already handles freshness
+    ALL_DEVS = data.devices || [];
+
+    setDot(true);
+    render();
+  }catch(e){ setDot(false); }
 }
 
-// ── Filter Buttons ─────────────────────────────────────────────────────
-document.getElementById('filter-group').addEventListener('click', e => {
-  const btn = e.target.closest('.filter-btn');
-  if (!btn) return;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  activeFilter = btn.dataset.filter;
-  renderDevices(allDevices);
-});
+function setDot(ok){
+  const dot=document.getElementById('dot');
+  if(ok&&!lastOk){ dot.classList.remove('offline'); lastOk=true; }
+  else if(!ok&&lastOk){ dot.classList.add('offline'); lastOk=false; }
+}
 
-document.getElementById('sort-select').addEventListener('change', e => {
-  activeSort = e.target.value;
-  renderDevices(allDevices);
+// ── Controls ───────────────────────────────────────────────────────────────
+document.getElementById('fgrp').addEventListener('click',e=>{
+  const btn=e.target.closest('.fb');
+  if(!btn) return;
+  document.querySelectorAll('.fb').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  FILTER=btn.dataset.f; render();
 });
+document.getElementById('ssort').addEventListener('change',e=>{ SORT=e.target.value; render(); });
 
-// ── Init ───────────────────────────────────────────────────────────────
-loadData();
-setInterval(loadData, 5000);
+// ── Init ───────────────────────────────────────────────────────────────────
+load();
+setInterval(load,5000);
 </script>
 </body>
 </html>
